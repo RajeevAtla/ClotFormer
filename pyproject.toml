@@ -7,8 +7,7 @@ name = "ClotFormer"
 version = "0.1.0"
 description = "Swin model for stroke etiology prediction"
 readme = "README.md"
-requires-python = ">=3.9,<=3.12"
-license = { text = "MIT" }
+requires-python = ">=3.10,<=3.12"
 authors = [{ name = "Rajeev Atla" }]
 dependencies = [
   "albumentations>=1.3.0",
