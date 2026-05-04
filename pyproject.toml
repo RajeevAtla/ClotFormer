@@ -34,7 +34,6 @@ dependencies = [
   "torchvision>=0.14.0",
   "tqdm>=4.64.0",
   "transformers>=4.21.0",
-  "wandb>=0.13.0",
   "certifi>=2025.10.5",
 ]
 
