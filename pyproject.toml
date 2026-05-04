@@ -50,6 +50,8 @@ explicit = true
 
 [tool.uv.sources]
 torch = { index = "pytorch" }
+torchvision = { index = "pytorch" }
+torchaudio = { index = "pytorch" }
 
 [tool.uv]
 environments = ["sys_platform != 'darwin'"]
