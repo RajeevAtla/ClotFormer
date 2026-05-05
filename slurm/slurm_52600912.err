@@ -1,0 +1,71 @@
+/usr/bin/lua: /opt/sw/admin/lmod/lmod/libexec/lmod:61: module 'posix' not found:
+	no field package.preload['posix']
+	no file '/usr/share/lua/5.1/posix.lua'
+	no file '/usr/share/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.lua'
+	no file '/usr/lib64/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.so'
+	no file '/usr/lib64/lua/5.1/loadall.so'
+stack traceback:
+	[C]: in function 'require'
+	/opt/sw/admin/lmod/lmod/libexec/lmod:61: in main chunk
+	[C]: in ?
+/usr/bin/lua: /opt/sw/admin/lmod/lmod/libexec/lmod:61: module 'posix' not found:
+	no field package.preload['posix']
+	no file '/usr/share/lua/5.1/posix.lua'
+	no file '/usr/share/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.lua'
+	no file '/usr/lib64/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.so'
+	no file '/usr/lib64/lua/5.1/loadall.so'
+stack traceback:
+	[C]: in function 'require'
+	/opt/sw/admin/lmod/lmod/libexec/lmod:61: in main chunk
+	[C]: in ?
+/usr/bin/lua: /opt/sw/admin/lmod/lmod/libexec/lmod:61: module 'posix' not found:
+	no field package.preload['posix']
+	no file '/usr/share/lua/5.1/posix.lua'
+	no file '/usr/share/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.lua'
+	no file '/usr/lib64/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.so'
+	no file '/usr/lib64/lua/5.1/loadall.so'
+stack traceback:
+	[C]: in function 'require'
+	/opt/sw/admin/lmod/lmod/libexec/lmod:61: in main chunk
+	[C]: in ?
+/usr/bin/lua: /opt/sw/admin/lmod/lmod/libexec/lmod:61: module 'posix' not found:
+	no field package.preload['posix']
+	no file '/usr/share/lua/5.1/posix.lua'
+	no file '/usr/share/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.lua'
+	no file '/usr/lib64/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.so'
+	no file '/usr/lib64/lua/5.1/loadall.so'
+stack traceback:
+	[C]: in function 'require'
+	/opt/sw/admin/lmod/lmod/libexec/lmod:61: in main chunk
+	[C]: in ?
+/usr/bin/lua: /opt/sw/admin/lmod/lmod/libexec/lmod:61: module 'posix' not found:
+	no field package.preload['posix']
+	no file '/usr/share/lua/5.1/posix.lua'
+	no file '/usr/share/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.lua'
+	no file '/usr/lib64/lua/5.1/posix/init.lua'
+	no file '/usr/lib64/lua/5.1/posix.so'
+	no file '/usr/lib64/lua/5.1/loadall.so'
+stack traceback:
+	[C]: in function 'require'
+	/opt/sw/admin/lmod/lmod/libexec/lmod:61: in main chunk
+	[C]: in ?
+Resolved 207 packages in 16ms
+Checked 193 packages in 2.23s
+/var/lib/slurm/slurmd/job52600912/slurm_script: line 43: git: command not found
+Traceback (most recent call last):
+  File "/scratch/rra80/ClotFormer/main.py", line 379, in <module>
+    main()
+  File "/scratch/rra80/ClotFormer/main.py", line 285, in main
+    class_names = get_class_names(TRAIN_DIR)
+  File "/scratch/rra80/ClotFormer/main.py", line 151, in get_class_names
+    raise ValueError(
+ValueError: No class folders found inside data/train. Expected something like data/train/benign and data/train/malignant.
