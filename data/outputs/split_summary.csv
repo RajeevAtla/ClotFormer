@@ -1,0 +1,7 @@
+split,label,patient_count
+train,CE,365
+train,LAA,140
+validation,CE,46
+validation,LAA,17
+test,CE,46
+test,LAA,18
