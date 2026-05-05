@@ -25,7 +25,7 @@ from transformers import (
 # Config
 # ----------------------------
 
-DATA_DIR = Path("data")
+DATA_DIR = Path("data/data")
 
 TRAIN_DIR = DATA_DIR / "train"
 VAL_DIR = DATA_DIR / "val"
