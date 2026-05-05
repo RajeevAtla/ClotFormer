@@ -18,55 +18,35 @@ mkdir -p slurm
 
 module purge
 module use /projects/community/modulefiles
-module load apptainer
+module load gcc/10.2.0/openmpi
+module load cuda/12.1
 module load git/2.35.1-ez82
 
-# check apptainer version
-apptainer --version
+# activate uv venv
+source .venv/bin/activate
+uv sync
 
-# set cache dir to scratch so we don't run out of space
-mkdir -p /scratch/${USER}/apptainer
-export APPTAINER_CACHEDIR=/scratch/${USER}/apptainer
+# set SSL/TLS certificates
+export SSL_CERT_FILE=$(uv run python -c "import certifi; print(certifi.where())")
+
+# Print job information
+echo "Job ID: $SLURM_JOB_ID"
+echo "Job Name: $SLURM_JOB_NAME"
+echo "Node: $SLURM_NODELIST"
+echo "GPU: $CUDA_VISIBLE_DEVICES"
+echo "Working Directory: $(pwd)"
+echo "Python Path: $PYTHONPATH"
+
 
 # get current git commit
 echo "Current git commit: "
 git rev-parse --short HEAD
 
-TORCH_IMAGE=pytorch:26.04-py3
+# Check GPU availability
+nvidia-smi
 
-# pull nvidia's jax container if not pulled
-if [ ! -f "${TORCH_IMAGE}" ]; then
-  echo "Cached apptainer image not found, pulling new one"
-  apptainer pull "${TORCH_IMAGE}" docker://nvcr.io/nvidia/pytorch:26.04-py3
-else
-  echo "Using cached apptainer image"
-fi
-
-apptainer exec --nv "${TORCH_IMAGE}" bash -c '
-  echo "Container started"
-  set -euo pipefail
-  
-  # uv setup
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  source $HOME/.local/bin/env
-  echo "uv installed!"
-  uv --version
-  
-  # sync dependencies
-  uv sync --group cuda
-  
-  # check jax+nvidia drivers+cuda are working correctly
-  nvidia-smi
-  nvcc --version
-  uv run python -c "import jax; print(jax.devices())"
-  
-  # run training
-  uv run python -m src.main \
-  --config configs/example.toml \
-  --output-dir runs \
-  --experiment-name 2-gpu-run-full \
-  --seed 42 \
-  --num-epochs 50
-'
+# Run training
+echo "Starting SwinV2 finetuning..."
+uv run python main.py
 
 echo "Job completed at: $(date)"
