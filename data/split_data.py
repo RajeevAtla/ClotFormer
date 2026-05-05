@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# make_data_folders.py
 
 from __future__ import annotations
 
@@ -10,15 +10,17 @@ from sklearn.model_selection import train_test_split
 
 
 # ----------------------------
-# Hardcoded paths / settings
+# Hardcoded paths
 # ----------------------------
 
 CSV_PATH = Path("train.csv")
 ORIGINAL_IMAGE_DIR = Path("train_original")
 
-TRAIN_DIR = Path("train")
-VAL_DIR = Path("val")
-TEST_DIR = Path("test")
+OUTPUT_DATA_DIR = Path("data")
+
+TRAIN_DIR = OUTPUT_DATA_DIR / "train"
+VAL_DIR = OUTPUT_DATA_DIR / "validation"
+TEST_DIR = OUTPUT_DATA_DIR / "test"
 
 PATIENT_COL = "patient_id"
 LABEL_COL = "label"
@@ -27,14 +29,14 @@ IMAGE_ID_COL = "image_id"
 RANDOM_SEED = 42
 
 IMAGE_EXTENSIONS = [
+    ".png",
+    ".jpg",
+    ".jpeg",
     ".tif",
     ".tiff",
     ".svs",
     ".ndpi",
     ".mrxs",
-    ".png",
-    ".jpg",
-    ".jpeg",
 ]
 
 
@@ -57,7 +59,7 @@ def check_one_label_per_patient(df: pd.DataFrame) -> None:
         examples = bad_patients.index[:10].tolist()
         raise ValueError(
             "Some patients have more than one label. "
-            "Resolve this before splitting. "
+            "This can cause leakage or ambiguous labels. "
             f"Example patient IDs: {examples}"
         )
 
@@ -79,16 +81,7 @@ def assign_patient_splits(patient_df: pd.DataFrame) -> dict[str, str]:
     """
     Creates an 80/10/10 patient-level split.
 
-    Step 1:
-        80% train
-        20% temporary
-
-    Step 2:
-        Split the temporary 20% into:
-        10% validation
-        10% test
-
-    Stratification is done by patient label.
+    All images from the same patient stay in the same split.
     """
 
     train_patients, temp_patients = train_test_split(
@@ -99,7 +92,7 @@ def assign_patient_splits(patient_df: pd.DataFrame) -> dict[str, str]:
         stratify=patient_df[LABEL_COL],
     )
 
-    val_patients, test_patients = train_test_split(
+    validation_patients, test_patients = train_test_split(
         temp_patients,
         test_size=0.50,
         random_state=RANDOM_SEED,
@@ -112,8 +105,8 @@ def assign_patient_splits(patient_df: pd.DataFrame) -> dict[str, str]:
     for patient_id in train_patients[PATIENT_COL]:
         split_map[str(patient_id)] = "train"
 
-    for patient_id in val_patients[PATIENT_COL]:
-        split_map[str(patient_id)] = "val"
+    for patient_id in validation_patients[PATIENT_COL]:
+        split_map[str(patient_id)] = "validation"
 
     for patient_id in test_patients[PATIENT_COL]:
         split_map[str(patient_id)] = "test"
@@ -132,17 +125,27 @@ def verify_no_patient_leakage(df: pd.DataFrame) -> None:
         )
 
 
+def label_to_class_folder(label: object) -> str:
+    """
+    Converts labels into folder names.
+
+    Example:
+        0 -> class_0
+        1 -> class_1
+        tumor -> class_tumor
+    """
+
+    return f"class_{label}"
+
+
 def find_image_file(image_id: str) -> Path:
     """
-    Finds the WSI file inside train_original.
+    Finds an image inside train_original.
 
-    This supports two cases:
-    1. image_id already includes an extension
-       Example: 006388_0.tif
-
-    2. image_id does not include an extension
-       Example: 006388_0
-       The script tries common WSI/image extensions.
+    Supports both:
+        image_id = img001.png
+    and:
+        image_id = img001
     """
 
     image_id = str(image_id)
@@ -161,22 +164,25 @@ def find_image_file(image_id: str) -> Path:
     )
 
 
-def copy_split_images(df: pd.DataFrame) -> None:
-    split_to_dir = {
-        "train": TRAIN_DIR,
-        "val": VAL_DIR,
-        "test": TEST_DIR,
-    }
+def create_output_folders(df: pd.DataFrame) -> None:
+    labels = sorted(df[LABEL_COL].unique())
 
-    for split_dir in split_to_dir.values():
-        split_dir.mkdir(parents=True, exist_ok=True)
+    for split in ["train", "validation", "test"]:
+        for label in labels:
+            class_folder = label_to_class_folder(label)
+            output_dir = OUTPUT_DATA_DIR / split / class_folder
+            output_dir.mkdir(parents=True, exist_ok=True)
 
+
+def copy_images_into_class_folders(df: pd.DataFrame) -> None:
     missing_images: list[str] = []
 
     for _, row in df.iterrows():
         image_id = str(row[IMAGE_ID_COL])
+        label = row[LABEL_COL]
         split = row["split"]
-        output_dir = split_to_dir[split]
+
+        class_folder = label_to_class_folder(label)
 
         try:
             source_path = find_image_file(image_id)
@@ -184,7 +190,8 @@ def copy_split_images(df: pd.DataFrame) -> None:
             missing_images.append(image_id)
             continue
 
-        destination_path = output_dir / source_path.name
+        destination_dir = OUTPUT_DATA_DIR / split / class_folder
+        destination_path = destination_dir / source_path.name
 
         if destination_path.exists():
             continue
@@ -200,42 +207,47 @@ def copy_split_images(df: pd.DataFrame) -> None:
 
 
 def save_split_csvs(df: pd.DataFrame) -> None:
-    df.to_csv("train_with_patient_splits.csv", index=False)
+    OUTPUT_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    df[df["split"] == "train"].drop(columns=["split"]).to_csv(
-        "train_split.csv",
+    df.to_csv(OUTPUT_DATA_DIR / "all_splits.csv", index=False)
+
+    df[df["split"] == "train"].to_csv(
+        OUTPUT_DATA_DIR / "train_split.csv",
         index=False,
     )
 
-    df[df["split"] == "val"].drop(columns=["split"]).to_csv(
-        "val_split.csv",
+    df[df["split"] == "validation"].to_csv(
+        OUTPUT_DATA_DIR / "validation_split.csv",
         index=False,
     )
 
-    df[df["split"] == "test"].drop(columns=["split"]).to_csv(
-        "test_split.csv",
+    df[df["split"] == "test"].to_csv(
+        OUTPUT_DATA_DIR / "test_split.csv",
         index=False,
     )
 
 
 def print_split_stats(df: pd.DataFrame) -> None:
     print("\nImage / WSI counts by split:")
-    print(df["split"].value_counts().reindex(["train", "val", "test"]))
+    print(df["split"].value_counts().reindex(["train", "validation", "test"]))
 
     print("\nPatient counts by split:")
     print(
         df.groupby("split")[PATIENT_COL]
         .nunique()
-        .reindex(["train", "val", "test"])
+        .reindex(["train", "validation", "test"])
     )
 
     print("\nImage / WSI label counts by split:")
-    print(pd.crosstab(df["split"], df[LABEL_COL]).reindex(["train", "val", "test"]))
+    print(
+        pd.crosstab(df["split"], df[LABEL_COL])
+        .reindex(["train", "validation", "test"])
+    )
 
     print("\nImage / WSI label proportions by split:")
     print(
         pd.crosstab(df["split"], df[LABEL_COL], normalize="index")
-        .reindex(["train", "val", "test"])
+        .reindex(["train", "validation", "test"])
         .round(4)
     )
 
@@ -266,18 +278,29 @@ def main() -> None:
 
     verify_no_patient_leakage(df)
 
+    create_output_folders(df)
+    copy_images_into_class_folders(df)
     save_split_csvs(df)
-    copy_split_images(df)
 
     print_split_stats(df)
 
     print("\nDone.")
-    print(f"Created folders: {TRAIN_DIR}, {VAL_DIR}, {TEST_DIR}")
-    print("Created CSVs:")
-    print("  train_with_patient_splits.csv")
-    print("  train_split.csv")
-    print("  val_split.csv")
-    print("  test_split.csv")
+    print("Created folder structure like:")
+    print("data/")
+    print("  train/")
+    print("    class_0/")
+    print("    class_1/")
+    print("  validation/")
+    print("    class_0/")
+    print("    class_1/")
+    print("  test/")
+    print("    class_0/")
+    print("    class_1/")
+    print("\nCreated CSV files:")
+    print("  data/all_splits.csv")
+    print("  data/train_split.csv")
+    print("  data/validation_split.csv")
+    print("  data/test_split.csv")
 
 
 if __name__ == "__main__":
