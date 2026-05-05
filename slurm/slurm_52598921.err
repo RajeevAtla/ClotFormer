@@ -1,0 +1,10 @@
+Resolved 207 packages in 3ms
+Checked 193 packages in 557ms
+Traceback (most recent call last):
+  File "/scache/scratch/rra80/ClotFormer/main.py", line 379, in <module>
+    main()
+  File "/scache/scratch/rra80/ClotFormer/main.py", line 285, in main
+    class_names = get_class_names(TRAIN_DIR)
+  File "/scache/scratch/rra80/ClotFormer/main.py", line 151, in get_class_names
+    raise ValueError(
+ValueError: No class folders found inside data/train. Expected something like data/train/benign and data/train/malignant.

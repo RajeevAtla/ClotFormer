@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=run-clot-former
-#SBATCH --partition=gpu
+#SBATCH --partition=gpu-redhat
 #SBATCH --gres=gpu:2
 #SBATCH --time=12:00:00
 #SBATCH --mem=32G
